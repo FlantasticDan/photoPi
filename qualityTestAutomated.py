@@ -39,7 +39,7 @@ camera.awb_gains = whiteBal
 imgName = input("File Name:")
 
 # inform user of current settings
-print("piCamera will take " + len(imgFormat) + " images named " + \
+print("piCamera will take " + str(len(imgFormat)) + " images named " + \
     imgName + " with the following camera settings...")
 print("Exposure Speed:")
 print(camera.exposure_speed)
@@ -54,12 +54,13 @@ print(camera.iso)
 
 # capture loop
 for x in imgFormat:
-    camera.capture(imgName, format=imgFormat[x])
-    print(imgName + "." + imgFormat[x] + " has been saved.")
-    if imgFormat[x] == "jpeg":  # jpeg bayer exception
+    fileName = imgName + "_" + x
+    camera.capture(fileName, format=x)
+    print(fileName + "." + x + " has been saved.")
+    if x == "jpeg":  # jpeg bayer exception
         fileNameBayer = imgName + "_bayer"
-        camera.capture(fileNameBayer, format=imgFormat[x], bayer=True)
-        print(fileNameBayer + "." + imgFormat[x] + " has been saved.")
+        camera.capture(fileNameBayer, format=x, bayer=True)
+        print(fileNameBayer + "." + x + " has been saved.")
 
 camera.stop_preview()
 print("All images saved.")
