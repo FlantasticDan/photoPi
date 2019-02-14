@@ -54,10 +54,10 @@ if imgFormat == "jpeg":
 
 # filename generation
 fileName = imgName + "_shutter." + camera.exposure_speed + "_gains." \
-    camera.digital_gain + "." + camera.analog_gain
+    + camera.digital_gain + "." + camera.analog_gain
 
 # capture
-if imgFormat == "jpeg" and bayerBool = True:
-    fileNameBayer = fileName = "_bayer"
-    camera.capture(fileNameBayer, format = imgFormat, bayer = bayerBool)
-camera.capture(fileName, format = imgFormat)
+if imgFormat == "jpeg" and bayerBool is True:
+    fileNameBayer = fileName + "_bayer"
+    camera.capture(fileNameBayer, format=imgFormat, bayer=bayerBool)
+camera.capture(fileName, format=imgFormat)
