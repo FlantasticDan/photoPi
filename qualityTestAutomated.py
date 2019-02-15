@@ -4,6 +4,7 @@
 from time import sleep
 from picamera import PiCamera
 import datetime
+import os
 
 # define camera as the device on CSI port 0
 camera = PiCamera()
@@ -60,30 +61,32 @@ print("ISO:")
 print(camera.iso)
 
 # export exposure data
-settingsFile = open("/" + imgName + "/" + imgName + \
-    "_settings.txt", "w")
-settingsFile.write(datetime.datetime.now())
+pathFolder = imgName
+os.mkdir(pathFolder, 0o777)
+settingsFile = open(imgName + "/" + imgName + \
+    "_settings.txt", "w+")
+settingsFile.write(str(datetime.datetime.now()))
 settingsFile.write("\n" + "Exposure Speed:" + "\n")
-settingsFile.write(camera.exposure_speed)
+settingsFile.write(str(camera.exposure_speed))
 settingsFile.write("\n" + "Digital Gain:" + "\n")
-settingsFile.write(camera.digital_gain)
+settingsFile.write(str(camera.digital_gain))
 settingsFile.write("\n" + "Analog Gain:" + "\n")
-settingsFile.write(camera.analog_gain)
+settingsFile.write(str(camera.analog_gain))
 settingsFile.write("\n" + "White Balance Gain:" + "\n")
-settingsFile.write(camera.awb_gains)
+settingsFile.write(str(camera.awb_gains))
 settingsFile.write("\n" + "ISO:" + "\n")
-settingsFile.write(camera.iso)
+settingsFile.write(str(camera.iso))
 settingsFile.write("\n" + "Denoiser: " + "\n")
-settingsFile.write(camera.image_denoise)
+settingsFile.write(str(camera.image_denoise))
 settingsFile.close()
 
 # capture loop
 for x in imgFormat:
     fileName = imgName + "_" + x
-    camera.capture("/" + imgName + "/" + fileName, format=x)
+    camera.capture(imgName + "/" + fileName, format=x)
     print(fileName + "." + x + " has been saved.")
     if x == "jpeg":  # jpeg bayer exception
-        fileNameBayer = "/" + imgName + "/" + imgName + "_bayer"
+        fileNameBayer = imgName + "/" + imgName + "_bayer"
         camera.capture(fileNameBayer, format=x, bayer=True)
         print(fileNameBayer + "." + x + " has been saved.")
 
