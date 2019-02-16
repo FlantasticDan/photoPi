@@ -66,29 +66,29 @@ os.mkdir(pathFolder, 0o777)
 settingsFile = open(imgName + "/" + imgName + \
     "_settings.txt", "w+")
 settingsFile.write(str(datetime.datetime.now()))
-settingsFile.write("\n" + "Exposure Speed:" + "\n")
+settingsFile.write("\n" + "Exposure Speed: ")
 settingsFile.write(str(camera.exposure_speed))
-settingsFile.write("\n" + "Digital Gain:" + "\n")
+settingsFile.write("\n" + "Digital Gain: ")
 settingsFile.write(str(camera.digital_gain))
-settingsFile.write("\n" + "Analog Gain:" + "\n")
+settingsFile.write("\n" + "Analog Gain: ")
 settingsFile.write(str(camera.analog_gain))
-settingsFile.write("\n" + "White Balance Gain:" + "\n")
+settingsFile.write("\n" + "White Balance Gain: ")
 settingsFile.write(str(camera.awb_gains))
-settingsFile.write("\n" + "ISO:" + "\n")
+settingsFile.write("\n" + "ISO: ")
 settingsFile.write(str(camera.iso))
-settingsFile.write("\n" + "Denoiser: " + "\n")
+settingsFile.write("\n" + "Denoiser: ")
 settingsFile.write(str(camera.image_denoise))
 settingsFile.close()
 
 # capture loop
 for x in imgFormat:
-    fileName = imgName + "_" + x
+    fileName = imgName + "." + x
     camera.capture(imgName + "/" + fileName, format=x)
-    print(fileName + "." + x + " has been saved.")
+    print(fileName + " has been saved.")
     if x == "jpeg":  # jpeg bayer exception
-        fileNameBayer = imgName + "/" + imgName + "_bayer"
-        camera.capture(fileNameBayer, format=x, bayer=True)
-        print(fileNameBayer + "." + x + " has been saved.")
+        fileNameBayer = imgName + "_bayer." + x
+        camera.capture(imgName + "/" + fileNameBayer, format=x, bayer=True)
+        print(fileNameBayer + " has been saved.")
 
 camera.stop_preview()
 camera.close()
