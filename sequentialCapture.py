@@ -3,7 +3,7 @@
 # import necessary packages
 import os
 import datetime
-from time import sleep
+import time
 import picamera
 
 # calibrate camera
@@ -21,12 +21,12 @@ def cameraCalibration(setISO=100):
     # lock exposure and white balance
     camera.exposure_mode = 'auto'
     camera.awb_mode = "auto"
-    sleep(2)
+    time.sleep(2)
     camera.exposure_mode = 'off'
-    sleep(0.5)
+    time.sleep(0.5)
     whiteBal = camera.awb_gains
     camera.awb_mode = "off"
-    sleep(0.5)
+    time.sleep(0.5)
     camera.awb_gains = whiteBal
 
     # close preview
@@ -76,9 +76,35 @@ settingsFile.write("\n" + "White Balance Gain: " + str(camera.awb_gains))
 settingsFile.write("\n" + "ISO: " + str(camera.iso))
 settingsFile.close()
 
+# initialize time tracking
+startTime = time.time()
+imgTime = time.time()
+timeFile = open(directory + fileName + "_times.txt", "w+")
+timeFile.write("Specified Delay: " + str(delay) + " seconds.")
+
 # capture inital sequence
 for i in enumerate(camera.capture_continuous(imgName, format=imgFormat)):
+    elapsedTime = time.time() - imgTime
+    imgTime = time.time()
     truePhoto = i[0] + 1
-    print("Image " + str(truePhoto) + " captured.")
+    print("Image " + str(truePhoto) + " of " + str(originalCount) + \
+        " captured in " + time.strftime("%S seconds.", time.gmtime(elapsedTime)))
+    timeFile.write("\n Image " + str(truePhoto) + "captured in " \
+        + time.strftime("%S seconds.", time.gmtime(elapsedTime)))
+    time.sleep(delay)
+    # allow sequence length to be expanded
     if truePhoto == int(originalCount):
-        break
+        print("All " + str(originalCount) + " images saved.")
+        newCount = input("Additional Images? ")
+        originalCount += newCount
+        if truePhoto == int(originalCount):
+            break
+
+# close out and free resources
+finalTime = time.time() + startTime
+timeFile.write("\n Total Time Elapsed: " + \
+    time.strftime("%S seconds.", time.gmtime(finalTime)))
+timeFile.close()
+camera.close()
+print(str(fileName) + " capture has completed with " + str(originalCount) \
+    + " total images in " + time.strftime("%S seconds.", time.gmtime(finalTime)))
