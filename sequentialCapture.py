@@ -87,7 +87,6 @@ timeFile.write("Specified Delay: " + str(delay) + " seconds.")
 for i in enumerate(camera.capture_continuous(imgName, format=imgFormat)):
     # timing and counting
     elapsedTime = time.time() - imgTime
-    imgTime = time.time()
     truePhoto = i[0] + 1
 
     # print and record status
@@ -97,11 +96,15 @@ for i in enumerate(camera.capture_continuous(imgName, format=imgFormat)):
         + time.strftime("%S seconds.", time.gmtime(elapsedTime)))
 
     # delay implementation
-    if (elapsedTime < int(delay)):
+    if elapsedTime < int(delay):
         effectiveDelay = int(delay) - elapsedTime
+        print("Holding for Delay: " +  \
+              time.strftime("%S seconds.", time.gmtime(effectiveDelay)))
         time.sleep(effectiveDelay)
     else:
         print("Warning: Encoder Time Exceeded Delay")
+
+    imgTime = time.time() # reset time for next image
 
     # allow sequence length to be expanded
     if truePhoto == originalCount:
@@ -110,6 +113,8 @@ for i in enumerate(camera.capture_continuous(imgName, format=imgFormat)):
         originalCount += int(newCount)
         if truePhoto == int(originalCount):
             break
+    else:
+        print("Capturing Image " + str(truePhoto + 1) + "...")
 
 # close out and free resources
 finalTime = time.time() - startTime
