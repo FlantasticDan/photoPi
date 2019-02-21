@@ -64,6 +64,7 @@ delay = input("Image Delay (in seconds): ")
 os.mkdir(fileName, 0o777)
 directory = fileName + "/"
 imgName = directory + fileName + "_{counter:03d}." + imgFormat
+originalCount = int(originalCount)
 
 # save settings reference file
 settingsFile = open(directory + fileName + "_settings.txt", "w+")
@@ -89,22 +90,22 @@ for i in enumerate(camera.capture_continuous(imgName, format=imgFormat)):
     truePhoto = i[0] + 1
     print("Image " + str(truePhoto) + " of " + str(originalCount) + \
         " captured in " + time.strftime("%S seconds.", time.gmtime(elapsedTime)))
-    timeFile.write("\n Image " + str(truePhoto) + "captured in " \
+    timeFile.write("\n Image " + str(truePhoto) + " captured in " \
         + time.strftime("%S seconds.", time.gmtime(elapsedTime)))
-    time.sleep(delay)
+    time.sleep(int(delay))
     # allow sequence length to be expanded
-    if truePhoto == int(originalCount):
+    if truePhoto == originalCount:
         print("All " + str(originalCount) + " images saved.")
         newCount = input("Additional Images? ")
-        originalCount += newCount
+        originalCount += int(newCount)
         if truePhoto == int(originalCount):
             break
 
 # close out and free resources
-finalTime = time.time() + startTime
-timeFile.write("\n Total Time Elapsed: " + \
-    time.strftime("%S seconds.", time.gmtime(finalTime)))
+finalTime = time.time() - startTime
+timeFile.write("\n" + "Total Time Elapsed: " + \
+    time.strftime("%M:%S.", time.gmtime(finalTime)))
 timeFile.close()
 camera.close()
 print(str(fileName) + " capture has completed with " + str(originalCount) \
-    + " total images in " + time.strftime("%S seconds.", time.gmtime(finalTime)))
+    + " total images in " + time.strftime("%M:%S.", time.gmtime(finalTime)))
