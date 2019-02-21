@@ -83,16 +83,26 @@ imgTime = time.time()
 timeFile = open(directory + fileName + "_times.txt", "w+")
 timeFile.write("Specified Delay: " + str(delay) + " seconds.")
 
-# capture inital sequence
+# capture sequence
 for i in enumerate(camera.capture_continuous(imgName, format=imgFormat)):
+    # timing and counting
     elapsedTime = time.time() - imgTime
     imgTime = time.time()
     truePhoto = i[0] + 1
+
+    # print and record status
     print("Image " + str(truePhoto) + " of " + str(originalCount) + \
         " captured in " + time.strftime("%S seconds.", time.gmtime(elapsedTime)))
     timeFile.write("\n Image " + str(truePhoto) + " captured in " \
         + time.strftime("%S seconds.", time.gmtime(elapsedTime)))
-    time.sleep(int(delay))
+
+    # delay implementation
+    if (elapsedTime < int(delay)):
+        effectiveDelay = int(delay) - elapsedTime
+        time.sleep(effectiveDelay)
+    else:
+        print("Warning: Encoder Time Exceeded Delay")
+
     # allow sequence length to be expanded
     if truePhoto == originalCount:
         print("All " + str(originalCount) + " images saved.")
