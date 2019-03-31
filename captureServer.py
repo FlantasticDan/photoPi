@@ -52,11 +52,11 @@ def openSocket(client, port):
 count = 1
 clientServer = [""]
 clientSocket = [""]
-clientSocketMsg = [""]
+clientMsg = [""]
 while count < clients:
     clientServer.append(openSocket(client[0], port[count]))
     clientSocket.append("")
-    clientSocketMsg.append("")
+    clientMsg.append("")
     count += 1
 
 # open a SSH connection
@@ -75,6 +75,18 @@ while count < clients:
         clientSSH[count].run(["python", "captureClient.py", str(client[0]), str(port[count])])
     count += 1
 
+# utf-8 byte reciever, buffer, and decoder
+def msgDecode(client):
+    chunck = client.recv(16)
+    chunck = chunck.decode()
+    msgLength = int(chunck[:4])
+    msg = chunck[4:]
+    while len(msg) < msgLength:
+        chunck = client.recv(16)
+        chunck = chunck.decode()
+        msg += chunck
+    return msg
+
 # accept connection on socket
 def connectSocket(cServer):
     clientSocket, ip = cServer.accept()
@@ -86,7 +98,16 @@ while count < clients:
     sys.stdout.write("(" + "{:>2}".format(count) + " / {}) Connecting".format(clients - 1))
     sys.stdout.flush()
     clientSocket[count] = connectSocket(clientServer[count])
+    clientMsg[count] = msgDecode(clientSocket[count])
     sys.stdout.write("\r(" + "{:>2}".format(count) + " / {})".format(clients - 1))
-    print(" Connected!")
+    print(" Connected to {} ({})".format(clientMsg[count], client[count]))
     sys.stdout.flush()
     count += 1
+
+# utf-8 byte encoder with injected header
+def msgEncode(message):
+    msg = str(message)
+    msgLength = len(msg)
+    msg = "{:<4}".format(msgLength) + msg
+    msg = msg.encode()
+    return msg
