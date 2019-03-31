@@ -49,10 +49,10 @@ def openSocket(client, port):
     return hostServer
 
 # open the sockets and create the client array
-count = 1
-clientServer = [""]
-clientSocket = [""]
-clientMsg = [""]
+count = 0
+clientServer = []
+clientSocket = []
+clientMsg = []
 while count < clients:
     clientServer.append(openSocket(client[0], port[count]))
     clientSocket.append("")
@@ -65,8 +65,8 @@ def openSSH(host, user, pwd):
     return sshClient
 
 # open the SSH connections, download script to clients, and pass calibration
-count = 1
-clientSSH = [""]
+count = 0
+clientSSH = []
 path = client[0] + path + "captureClient.py"
 while count < clients:
     clientSSH.append(openSSH(client[count], sshKey[0], sshKey[1]))
@@ -93,13 +93,13 @@ def connectSocket(cServer):
     return clientSocket
 
 # accept the connections on the sockets
-count = 1
+count = 0
 while count < clients:
-    sys.stdout.write("(" + "{:>2}".format(count) + " / {}) Connecting".format(clients - 1))
+    sys.stdout.write("(" + "{:>2}".format(count + 1) + " / {}) Connecting".format(clients))
     sys.stdout.flush()
     clientSocket[count] = connectSocket(clientServer[count])
     clientMsg[count] = msgDecode(clientSocket[count])
-    sys.stdout.write("\r(" + "{:>2}".format(count) + " / {})".format(clients - 1))
+    sys.stdout.write("\r(" + "{:>2}".format(count + 1) + " / {})".format(clients))
     print(" Connected to {} ({})".format(clientMsg[count], client[count]))
     sys.stdout.flush()
     count += 1
