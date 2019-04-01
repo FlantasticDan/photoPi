@@ -4,19 +4,18 @@
 
 import time
 import datetime
-import os
 import socket
 import sys
 import spur
 
 # identify client IPs
 clientFile = open("clientIP.txt", "r")
-client = clientFile.readlines()
+CLIENT = clientFile.readlines()
 clientFile.close()
-clients = len(client)
+CLIENTS = len(CLIENT) # global constant, number of clients
 count = 0
-while count < clients:
-    client[count] = client[count].rstrip()
+while count < CLIENTS:
+    CLIENT[count] = CLIENT[count].rstrip()
     count += 1
 
 # identify ssh credentials
@@ -37,7 +36,7 @@ path = path.rstrip()
 # create client ports
 count = 0
 port = []
-while count < clients:
+while count < CLIENTS:
     port.append(2000 + count)
     count += 1
 
@@ -53,8 +52,8 @@ count = 0
 clientServer = []
 clientSocket = []
 clientMsg = []
-while count < clients:
-    clientServer.append(openSocket(client[0], port[count]))
+while count < CLIENTS:
+    clientServer.append(openSocket(CLIENT[0], port[count]))
     clientSocket.append("")
     clientMsg.append("")
     count += 1
@@ -67,24 +66,26 @@ def openSSH(host, user, pwd):
 # open the SSH connections, download script to clients, and pass calibration
 count = 0
 clientSSH = []
-path = client[0] + path + "captureClient.py"
-while count < clients:
-    clientSSH.append(openSSH(client[count], sshKey[0], sshKey[1]))
+path = CLIENT[0] + path + "captureClient.py"
+while count < CLIENTS:
+    clientSSH.append(openSSH(CLIENT[count], sshKey[0], sshKey[1]))
     with clientSSH[count]:
         clientSSH[count].run(["wget", "-N", path])
-        clientSSH[count].run(["python", "captureClient.py", str(client[0]), str(port[count])])
+        clientSSH[count].spawn(["python", "captureClient.py", str(CLIENT[0]), str(port[count])])
     count += 1
 
 # utf-8 byte reciever, buffer, and decoder
 def msgDecode(client):
-    chunck = client.recv(16)
-    chunck = chunck.decode()
-    msgLength = int(chunck[:4])
-    msg = chunck[4:]
+    chunk = client.recv(1)
+    while len(chunk) < 4:
+        chunk += client.recv(1)
+    chunk = chunk.decode()
+    msgLength = int(chunk[:4])
+    msg = chunk[4:]
     while len(msg) < msgLength:
-        chunck = client.recv(16)
-        chunck = chunck.decode()
-        msg += chunck
+        chunk = client.recv(1)
+        chunk = chunk.decode()
+        msg += chunk
     return msg
 
 # accept connection on socket
@@ -94,13 +95,13 @@ def connectSocket(cServer):
 
 # accept the connections on the sockets
 count = 0
-while count < clients:
-    sys.stdout.write("(" + "{:>2}".format(count + 1) + " / {}) Connecting".format(clients))
+while count < CLIENTS:
+    sys.stdout.write("(" + "{:>2}".format(count + 1) + " / {}) Connecting".format(CLIENTS))
     sys.stdout.flush()
     clientSocket[count] = connectSocket(clientServer[count])
     clientMsg[count] = msgDecode(clientSocket[count])
-    sys.stdout.write("\r(" + "{:>2}".format(count + 1) + " / {})".format(clients))
-    print(" Connected to {} ({})".format(clientMsg[count], client[count]))
+    sys.stdout.write("\r(" + "{:>2}".format(count + 1) + " / {})".format(CLIENTS))
+    print(" Connected to {} ({})".format(clientMsg[count], CLIENT[count]))
     sys.stdout.flush()
     count += 1
 
@@ -111,3 +112,29 @@ def msgEncode(message):
     msg = "{:<4}".format(msgLength) + msg
     msg = msg.encode()
     return msg
+
+# send message to all clients
+def sendMsgAllClients(message):
+    msg = msgEncode(message)
+    count = 0
+    while count < CLIENTS:
+        clientSocket[count].send(msg)
+        count += 1
+
+def recieveMsgAllClients():
+    count = 0
+    while count < CLIENTS:
+        clientMsg[count] = msgDecode(clientSocket[count])
+        print(clientMsg[count]) # debug
+        count += 1
+
+# query user
+fileName = input("File Name: ")
+imgFormat = input("Image Format [jpeg/png/bmp/yuv/rgb/bgr]: ")
+originalCount = input("Sequence Lenth (in images): ")
+
+# send user inputs to clients
+sendMsgAllClients(fileName)
+recieveMsgAllClients() # debug
+sendMsgAllClients(imgFormat)
+recieveMsgAllClients() # debug
