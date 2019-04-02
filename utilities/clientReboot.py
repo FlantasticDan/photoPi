@@ -40,7 +40,7 @@ while count < CLIENTS:
     clientSSH.append(openSSH(CLIENT[count], sshKey[0], sshKey[1]))
     with clientSSH[count]:
         clientSSH[count].spawn(["sudo", "reboot"])
-    sys.stdout.write("\r({:>}/{}) Clients Rebooted".format(count, CLIENTS - 1))
+    sys.stdout.write("\r({:>2}/{}) Clients Rebooted".format(count, CLIENTS - 1))
     sys.stdout.flush()
     count += 1
 
