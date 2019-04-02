@@ -135,13 +135,22 @@ def recieveMsgAllClients():
 # query user
 fileName = input("File Name: ")
 imgFormat = input("Image Format [jpeg/png/bmp/yuv/rgb/bgr]: ")
-originalCount = input("Sequence Lenth (in images): ")
+while True: # input verification
+    if imgFormat in ["jpeg", "png", "bmp", "yuv", "rgb", "bgr"]:
+        break
+    else:
+        imgFormat = input("[!] Invalid Format, Try Again [jpeg/png/bmp/yuv/rgb/bgr]: ")
+originalCount = input("Sequence Lenth [#]: ")
+while True: # int input verification
+    try:
+        originalCount = int(originalCount)
+        break
+    except ValueError:
+        originalCount = input("[!] Invalid Number, Try Again [#]: ")
 
 # send user inputs to clients
 sendMsgAllClients(fileName)
-recieveMsgAllClients() # debug
 sendMsgAllClients(imgFormat)
-recieveMsgAllClients() # debug
 
 # exposure calibration via host camera
 clientSocket[0].sendall(msgEncode("EXPOSURE"))
