@@ -48,10 +48,8 @@ camera.meter_mode = 'spot'
 camera.image_denoise = False
 
 fileName = msgDecode()
-FILE_NAME = str(socket.gethostname()) + "_" + fileName
-msgSend(FILE_NAME) # debug
 imgFormat = msgDecode()
-msgSend(imgFormat) # debug
+FILE_NAME = str(socket.gethostname()) + "_" + fileName + "." + imgFormat
 
 def cameraCalibration(iso=0, shutter=0):
     camera.start_preview()
@@ -75,24 +73,21 @@ def profileAnnotation(profile):
         float(camera.awb_gains[0]), float(camera.awb_gains[1]))
     return string
 
+def profileCycle(count, path, iso, shutter):
+    cameraCalibration(iso, shutter)
+    camera.annotate_text = profileAnnotation(count)
+    camera.capture("{}/{}.jpeg".format(path, count))
+
 def generateProfiles():
     path = fileName + "_Profiles"
     os.mkdir(path, 0o777)
-    cameraCalibration()
-    camera.annotate_text = profileAnnotation(1)
-    camera.capture("{}/1.jpeg".format(path))
-    cameraCalibration(100)
-    camera.annotate_text = profileAnnotation(2)
-    camera.capture("{}/2.jpeg".format(path))
-    cameraCalibration(100, 10000)
-    camera.annotate_text = profileAnnotation(3)
-    camera.capture("{}/3.jpeg".format(path))
-    cameraCalibration(200, 10000)
-    camera.annotate_text = profileAnnotation(4)
-    camera.capture("{}/4.jpeg".format(path))
-    cameraCalibration(400, 10000)
-    camera.annotate_text = profileAnnotation(5)
-    camera.capture("{}/5.jpeg".format(path))
+
+    profileCycle(1, path, 0, 0)
+    profileCycle(2, path, 100, 0)
+    profileCycle(3, path, 100, 10000)
+    profileCycle(4, path, 200, 10000)
+    profileCycle(5, path, 400, 10000)
+
     camera.annotate_text = ""
 
 
