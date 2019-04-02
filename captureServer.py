@@ -6,6 +6,7 @@ import time
 import datetime
 import socket
 import sys
+import shutil
 import spur
 
 # identify client IPs
@@ -29,9 +30,12 @@ while count < 2:
 
 # identify dependencies path
 pathFile = open("path.txt", "r")
-path = pathFile.readline()
+PATH = pathFile.readlines()
 pathFile.close()
-path = path.rstrip()
+count = 0
+while count < 2:
+    PATH[count] = PATH[count].rstrip()
+    count += 1
 
 # create client ports
 count = 0
@@ -66,11 +70,11 @@ def openSSH(host, user, pwd):
 # open the SSH connections, download script to clients, and pass calibration
 count = 0
 clientSSH = []
-path = CLIENT[0] + path + "captureClient.py"
+pathClient = CLIENT[0] + PATH[0] + "captureClient.py"
 while count < CLIENTS:
     clientSSH.append(openSSH(CLIENT[count], sshKey[0], sshKey[1]))
     with clientSSH[count]:
-        clientSSH[count].run(["wget", "-N", path])
+        clientSSH[count].run(["wget", "-N", pathClient])
         clientSSH[count].spawn(["python", "captureClient.py", str(CLIENT[0]), str(port[count])])
     count += 1
 
@@ -138,3 +142,17 @@ sendMsgAllClients(fileName)
 recieveMsgAllClients() # debug
 sendMsgAllClients(imgFormat)
 recieveMsgAllClients() # debug
+
+# exposure calibration via host camera
+clientSocket[0].sendall(msgEncode("EXPOSURE"))
+clientMsg[0] = msgDecode(clientSocket[0])
+if clientMsg[0] == "GENERATED":
+    print("Exposure Profiles Generated:")
+    pathExposure = PATH[1] + fileName + "_Profiles"
+    shutil.copytree("/home/{}/{}_Profiles".format(sshKey[0], fileName), pathExposure)
+    count = 1
+    while count <= 5:
+        print("{} - http://{}{}{}_Profiles/{}.jpeg".format(count, CLIENT[0], 
+        PATH[0], fileName, count))
+        count += 1
+exposureProfile = input("Select an Exposure Profile: ")
