@@ -35,15 +35,16 @@ def openSSH(host, user, pwd):
 
 # open the SSH connections and reboot clients
 count = 1
-clientSSH = []
+clientSSH = [openSSH(CLIENT[0], sshKey[0], sshKey[1])]
 while count < CLIENTS:
     clientSSH.append(openSSH(CLIENT[count], sshKey[0], sshKey[1]))
     with clientSSH[count]:
         clientSSH[count].spawn(["sudo", "reboot"])
-    sys.stdout.write("\r[!] ({}/{}) Clients Rebooted".format(count, CLIENTS))
+    sys.stdout.write("\r({:>}/{}) Clients Rebooted".format(count, CLIENTS - 1))
     sys.stdout.flush()
     count += 1
 
+# warn user about rebooting  host
 sys.stdout.write("\nRebooting THIS host in 5")
 sys.stdout.flush()
 delay = 5
@@ -53,6 +54,8 @@ while delay > 0:
     sys.stdout.write("\rRebooting THIS host in {}".format(delay))
     time.sleep(1)
 
+# reboot host
+sys.stdout.write("\nREBOOTING")
 clientSSH.append(openSSH(CLIENT[0], sshKey[0], sshKey[1]))
 with clientSSH[0]:
     clientSSH[0].spawn(["sudo", "reboot"])
