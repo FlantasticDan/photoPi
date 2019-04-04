@@ -81,13 +81,13 @@ def profileCycle(count, path, iso, shutter):
 def generateProfiles():
     path = fileName + "_Profiles"
     os.mkdir(path, 0o777)
-
+    camera.resolution = (1280, 720) # adjust camera resoluton for preview images
     profileCycle(1, path, 0, 0)
     profileCycle(2, path, 100, 0)
     profileCycle(3, path, 100, 10000)
     profileCycle(4, path, 200, 10000)
     profileCycle(5, path, 400, 10000)
-
+    camera.resolution = (3280, 2464) #resotre camera resolution to full quality
     camera.annotate_text = ""
 
 
