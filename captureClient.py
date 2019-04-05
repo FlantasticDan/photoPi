@@ -39,7 +39,7 @@ def msgSend(message):
     msg = msgEncode(message)
     SERVER.send(msg)
 
-msgSend(socket.gethostname())
+msgSend(socket.gethostname()) # confirm connection to server with host name
 
 # calibrate camera
 camera = picamera.PiCamera()
@@ -116,3 +116,24 @@ while True:
         cameraCalibration(400, 10000)
         break
 msgSend("EXPOSED")
+
+# create workspace
+os.mkdir(fileName, 0o777)
+directory = fileName + "/"
+imgName = directory + FILE_NAME
+cycle = 1
+
+# capture sequence
+while True:
+    msg = msgDecode()
+    if msg == "CAPTURE":
+        img = imgName + "_{:0>3}.{}".format(cycle, imgFormat)
+        camera.capture(img, format=imgFormat, quality=100)
+        cycle += 1
+        msgSend("CAPTURED")
+    if msg == "DONE":
+        break
+
+# exit
+camera.close()
+SERVER.close

@@ -3,11 +3,13 @@
 # Connects to and controls other pis on the LAN
 
 import time
-import datetime
 import socket
 import sys
 import shutil
+import statistics
 import spur
+
+print("### CAPTURE SERVER STARTING ###")
 
 # identify client IPs
 clientFile = open("clientIP.txt", "r")
@@ -129,7 +131,6 @@ def recieveMsgAllClients():
     count = 0
     while count < CLIENTS:
         clientMsg[count] = msgDecode(clientSocket[count])
-        print(clientMsg[count]) # debug
         count += 1
 
 # query user
@@ -158,7 +159,7 @@ sys.stdout.write("Generating Exposure Profiles...")
 sys.stdout.flush()
 clientMsg[0] = msgDecode(clientSocket[0])
 if clientMsg[0] == "GENERATED":
-    sys.stdout.write("\rExposure Profiles Generated:\n")
+    sys.stdout.write("\rExposure Profiles Generated:   \n")
     sys.stdout.flush()
     pathExposure = PATH[1] + fileName + "_Profiles"
     shutil.copytree("/home/{}/{}_Profiles".format(sshKey[0], fileName), pathExposure)
@@ -195,5 +196,38 @@ while delay > 0:
     time.sleep(1)
     sys.stdout.flush()
 
-statusHeader = "( READY )  [                    ]  ( CYCLE ) ( ETA )"
+statusHeader = "(  CYCLES  )  [{:^25}]  (  ETA  )".format("PROGRESS")
 sys.stdout.write("\r{}\n".format(statusHeader))
+
+TIMING = []
+
+def statusUpdate(cycle):
+    progress = round((cycle / originalCount) * 25)
+    progressPrint = "#" * progress
+    progressGap = " " * (25 - len(progressPrint))
+    eta = round(statistics.mean(TIMING) * (originalCount - cycle))
+    etaPrint = time.strftime("%M:%S", time.gmtime(eta))
+    sys.stdout.write("\r({:>3} of {:<3})  [{}{}]  ({:^7})".format(cycle, 
+        originalCount, progressPrint, progressGap, etaPrint))
+    sys.stdout.flush()
+
+
+cycle = 1
+while cycle <= originalCount:
+    start = time.time()
+    sendMsgAllClients("CAPTURE")
+    recieveMsgAllClients()
+    if all(i == "CAPTURED" for i in clientMsg) is True:
+        elapsed = time.time() - start
+        TIMING.append(elapsed)
+        statusUpdate(cycle)
+        cycle += 1
+
+# close sockets on clients and on host
+sendMsgAllClients("DONE")
+count = 0
+while count < CLIENTS:
+    clientSocket[count].close
+    count += 1
+print("")
+print("### CAPTURE COMPLETED SUCCESSFULLY ###")
