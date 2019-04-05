@@ -154,14 +154,46 @@ sendMsgAllClients(imgFormat)
 
 # exposure calibration via host camera
 clientSocket[0].sendall(msgEncode("EXPOSURE"))
+sys.stdout.write("Generating Exposure Profiles...")
+sys.stdout.flush()
 clientMsg[0] = msgDecode(clientSocket[0])
 if clientMsg[0] == "GENERATED":
-    print("Exposure Profiles Generated:")
+    sys.stdout.write("\rExposure Profiles Generated:\n")
+    sys.stdout.flush()
     pathExposure = PATH[1] + fileName + "_Profiles"
     shutil.copytree("/home/{}/{}_Profiles".format(sshKey[0], fileName), pathExposure)
     count = 1
     while count <= 5:
         print("{} - http://{}{}{}_Profiles/{}.jpeg".format(count, CLIENT[0], 
-        PATH[0], fileName, count))
+            PATH[0], fileName, count))
         count += 1
 exposureProfile = input("Select an Exposure Profile: ")
+while True: # int input verification
+    try:
+        exposureProfile = int(exposureProfile)
+        if exposureProfile <=5 and exposureProfile > 0:
+            break
+        else:
+            exposureProfile = input("[!] Invalid Profile, Try Again [#]: ")
+    except ValueError:
+        exposureProfile = input("[!] Invalid Profile, Try Again [#]: ")
+sendMsgAllClients(exposureProfile)
+recieveMsgAllClients()
+if all(i == "EXPOSED" for i in clientMsg) is False:
+    raise RuntimeError("Unable to Calibrate Exposure on Client(s)")
+else:
+    print("Exposure Calibrated on All Clients")
+
+# alert user of impending capture sequence
+sys.stdout.write("Starting Capture in 5")
+sys.stdout.flush()
+delay = 5
+time.sleep(1)
+while delay > 0:
+    delay -= 1
+    sys.stdout.write("\rStarting Capture in {}".format(delay))
+    time.sleep(1)
+    sys.stdout.flush()
+
+statusHeader = "( READY )  [                    ]  ( CYCLE ) ( ETA )"
+sys.stdout.write("\r{}\n".format(statusHeader))

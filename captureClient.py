@@ -97,3 +97,22 @@ if msg == "EXPOSURE":
     generateProfiles()
     msgSend("GENERATED")
     msg = msgDecode()
+
+# set exposure
+while True:
+    if msg == "1":
+        cameraCalibration(0, 0)
+        break
+    if msg == "2":
+        cameraCalibration(100, 0)
+        break
+    if msg == "3":
+        cameraCalibration(100, 10000)
+        break
+    if msg == "4":
+        cameraCalibration(200, 10000)
+        break
+    if msg == "5":
+        cameraCalibration(400, 10000)
+        break
+msgSend("EXPOSED")
