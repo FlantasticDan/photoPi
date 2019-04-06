@@ -186,6 +186,7 @@ else:
     print("Exposure Calibrated on All Clients")
 
 # alert user of impending capture sequence
+print("")
 sys.stdout.write("Starting Capture in 5")
 sys.stdout.flush()
 delay = 5
