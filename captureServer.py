@@ -228,7 +228,7 @@ while cycle <= originalCount:
 sendMsgAllClients("DONE")
 count = 0
 while count < CLIENTS:
-    clientSocket[count].close
+    clientSocket[count].close()
     count += 1
 print("")
 print("### CAPTURE COMPLETED SUCCESSFULLY ###")

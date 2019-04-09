@@ -136,4 +136,4 @@ while True:
 
 # exit
 camera.close()
-SERVER.close
+SERVER.close()
