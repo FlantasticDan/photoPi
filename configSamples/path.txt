@@ -1,2 +1,3 @@
 /path/to/server/directory/
 /path/to/apache/directory/
+/path/to/transfer/destination/
