@@ -136,7 +136,7 @@ def recieveMsgAllClients():
 # query user
 location = input("File Name: ")
 delete = input("Delete from Source? [Y/n]: ")
-if delete =="Y":
+if delete == "Y":
     DELETE = True
 else:
     DELETE = False
@@ -159,3 +159,44 @@ if all(i == "ZIPPED" for i in clientMsg) is True:
     totalTime = finish - start
     printTime = time.strftime("%M:%S", time.gmtime(totalTime))
     print("Compression Completed in {}".format(printTime))
+
+# determine disk space requirements
+recieveMsgAllClients()
+TOTALSIZE = 0
+for msg in clientMsg:
+    size = int(msg)
+    TOTALSIZE += size
+print("{:.2f} MB will be transferred to {}".format(TOTALSIZE * 0.000001, PATH[2]))
+print("")
+
+# transfer status printout
+def statusUpdate(currentSize, cycle):
+    progress = round((currentSize / TOTALSIZE) * 25)
+    progressPrint = "#" * progress
+    progressGap = " " * (25 - len(progressPrint))
+    dataPrint = currentSize * 0.000001
+    totalPrint = TOTALSIZE * 0.000001
+    data = "{:.2f} of {:.2f} MB".format(dataPrint, totalPrint)
+    sys.stdout.write("\r({:^19})  [{}{}]  ({:>3} of {:>3}".format(data, progressPrint, progressGap, cycle, CLIENTS))
+    sys.stdout.flush()
+
+
+# get archives from clients
+count = 0
+command = msgEncode("SEND_ARCHIVE")
+statusHeader = "({:^19})  [{:^25}]  ({:^10})".format("DATA", "PROGRESS", "ARCHIVE")
+sys.stdout.write("\r{}\n".format(statusHeader))
+sys.stdout.flush()
+while count < CLIENTS:
+    clientSocket[count].send(command)
+    clientSize = int(clientMsg[count])
+    archive = msgDecode(clientSocket[count])
+    destination = PATH[2] + archive
+    zipped = open(destination, "wb")
+    chunck = clientSocket[count].recv(1024)
+    while len(chunck) < clientSize:
+        chunck += clientSocket[count].recv(1024)
+        statusUpdate(len(chunck), count + 1)
+    zipped.write(chunck)
+    zipped.close()
+    count += 1

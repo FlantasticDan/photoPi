@@ -51,4 +51,16 @@ zipCheck = msgDecode()
 zippedDir = socket.gethostname() + "_" + location
 if zipCheck == "ZIP":
     shutil.make_archive(zippedDir, "tar", location)
+    zippedDir = zippedDir + ".tar"
     msgSend("ZIPPED")
+
+# alert server of the archive file size
+zipSize = os.path.getsize(zippedDir)
+msgSend(zipSize)
+
+# transfer archive
+if msgDecode() == "SEND_ARCHIVE":
+    msgSend(zippedDir)
+    fileDir = open(zippedDir, "rb")
+    fileDir = fileDir.read()
+    SERVER.sendfile(fileDir)
