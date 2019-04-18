@@ -7,6 +7,7 @@ import sys
 import os
 import time
 import shutil
+import tarfile
 
 # server connection and client identification
 SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -61,6 +62,5 @@ msgSend(zipSize)
 # transfer archive
 if msgDecode() == "SEND_ARCHIVE":
     msgSend(zippedDir)
-    fileDir = open(zippedDir, "rb")
-    fileDir = fileDir.read()
+    fileDir = tarfile.open(zippedDir, "r")
     SERVER.sendfile(fileDir)
